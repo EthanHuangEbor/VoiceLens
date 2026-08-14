@@ -36,10 +36,13 @@ window.__ModuleLoader__.load({
       var setErr = errState[1]
       var recogRef = react.useRef(null)
       var finalRef = react.useRef('')
+      var manualRef = react.useRef(false)
+      var lastBootRef = react.useRef(0)
 
       react.useEffect(
         function () {
           return function () {
+            manualRef.current = true
             try {
               if (recogRef.current) recogRef.current.abort()
             } catch (e) {}
@@ -58,22 +61,33 @@ window.__ModuleLoader__.load({
         }
       }
 
+      function flushFinal() {
+        if (finalRef.current.trim()) append(finalRef.current)
+        finalRef.current = ''
+      }
+
       function start() {
         setErr('')
         var SR = globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition
-        if (SR) {
-          startBrowser(SR)
+        if (!SR) {
+          setErr('此浏览器不支持语音识别（需 Chrome/Edge）')
           return
         }
-        setErr('此浏览器不支持语音识别（需 Chrome/Edge）')
+        manualRef.current = false
+        finalRef.current = ''
+        lastBootRef.current = 0
+        boot(SR)
+        setRec(true)
       }
 
-      function startBrowser(SR) {
+      function boot(SR) {
+        var now = Date.now()
+        if (now - lastBootRef.current < 300) return
+        lastBootRef.current = now
         var r = new SR()
         r.lang = 'zh-CN'
-        r.continuous = false
+        r.continuous = true
         r.interimResults = true
-        finalRef.current = ''
         r.onresult = function (e) {
           var interimText = ''
           for (var i = e.resultIndex; i < e.results.length; i++) {
@@ -84,33 +98,59 @@ window.__ModuleLoader__.load({
           setInterim(interimText)
         }
         r.onerror = function (e) {
-          setErr('识别失败: ' + (e && e.error ? e.error : 'unknown'))
-          setRec(false)
-          setInterim('')
+          var code = e && e.error ? e.error : 'unknown'
+          if (code === 'aborted') return
+          if (manualRef.current) {
+            setRec(false)
+            setInterim('')
+            return
+          }
+          if (code === 'not-allowed' || code === 'service-not-allowed') {
+            setErr('麦克风权限被拒绝')
+            setRec(false)
+            setInterim('')
+            return
+          }
+          try {
+            boot(SR)
+          } catch (err) {
+            setRec(false)
+          }
         }
         r.onend = function () {
-          setRec(false)
-          setInterim('')
-          if (finalRef.current.trim()) append(finalRef.current)
-          finalRef.current = ''
+          if (manualRef.current) {
+            setRec(false)
+            setInterim('')
+            flushFinal()
+            return
+          }
+          try {
+            boot(SR)
+          } catch (err) {
+            setRec(false)
+          }
         }
         recogRef.current = r
         try {
           r.start()
         } catch (e) {
           setErr('无法启动麦克风: ' + String((e && e.message) || e))
-          return
+          setRec(false)
         }
-        setRec(true)
+      }
+
+      function stop() {
+        manualRef.current = true
+        if (recogRef.current) {
+          try {
+            recogRef.current.stop()
+          } catch (e) {}
+        }
       }
 
       function onClick() {
         if (rec) {
-          if (recogRef.current) {
-            try {
-              recogRef.current.stop()
-            } catch (e) {}
-          }
+          stop()
           return
         }
         start()
