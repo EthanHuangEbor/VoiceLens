@@ -1,8 +1,11 @@
 {
   "name": "voicelens",
   "version": "0.1.0",
-  "description": "Voice input for DeepSeek Harness: a mic button in the composer (browser speech) plus a transcribe_audio tool backed by configurable ASR providers.",
+  "description": "Voice input and audio transcription for DeepSeek Harness and any skill-reading agent: a composer mic button (browser speech), a transcribe_audio tool, and a harness-agnostic `voicelens` CLI with configurable ASR providers.",
   "type": "module",
+  "bin": {
+    "voicelens": "./bin/voicelens.js"
+  },
   "exports": {
     ".": "./dsh/index.js",
     "./dsh": "./dsh/index.js",
@@ -10,10 +13,14 @@
     "./package.json": "./package.json"
   },
   "files": [
+    "bin",
+    "src",
     "dsh",
     "client",
     "skills",
+    "installers",
     "cordis.patch.yml",
+    "INSTALL.md",
     "README.md",
     "LICENSE"
   ],
@@ -25,6 +32,8 @@
     "transcription",
     "whisper",
     "agent-skill",
+    "claude-code",
+    "codex",
     "plugin"
   ],
   "author": "Ethan Huang",

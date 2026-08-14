@@ -1,7 +1,7 @@
 // Standalone smoke test for voicelens host half (no real key required).
 // Exercises: module import, tool registration, provider selection errors,
 // and the OpenAI-compatible request construction via a mocked fetch.
-import { name, inject, apply } from './dsh/index.js'
+import { name, inject, apply } from '../dsh/index.js'
 
 let captured = null
 const tools = {
