@@ -1,6 +1,6 @@
 {
   "name": "voicelens",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Voice input and audio transcription for DeepSeek Harness and any skill-reading agent: a composer mic button (browser speech), a transcribe_audio tool, and a harness-agnostic `voicelens` CLI with configurable ASR providers.",
   "type": "module",
   "bin": {
@@ -27,14 +27,20 @@
   "keywords": [
     "dsh",
     "deepseek-harness",
+    "deepseek",
     "speech-to-text",
+    "voice-input",
     "voice",
     "transcription",
+    "asr",
+    "audio",
     "whisper",
     "agent-skill",
+    "ai-assistant",
     "claude-code",
     "codex",
-    "plugin"
+    "plugin",
+    "modlens"
   ],
   "author": "Ethan Huang",
   "license": "MIT",

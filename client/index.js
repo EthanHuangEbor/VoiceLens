@@ -35,7 +35,8 @@ window.__ModuleLoader__.load({
       var err = errState[0]
       var setErr = errState[1]
       var recogRef = react.useRef(null)
-      var finalRef = react.useRef('')
+      var baseRef = react.useRef('')
+      var committedRef = react.useRef('')
       var manualRef = react.useRef(false)
       var lastBootRef = react.useRef(0)
 
@@ -51,19 +52,15 @@ window.__ModuleLoader__.load({
         [],
       )
 
-      function append(text) {
+      function commitSegment(text) {
         var t = String(text || '').replace(/\s+/g, ' ').trim()
         if (!t) return
-        var draft = props.draft && typeof props.draft === 'string' ? props.draft : ''
-        var next = draft ? draft + '\n' + t : t
+        committedRef.current = committedRef.current ? committedRef.current + ' ' + t : t
+        var base = baseRef.current
+        var next = base ? base + '\n' + committedRef.current : committedRef.current
         if (props.inputActions && typeof props.inputActions.setDraft === 'function') {
           props.inputActions.setDraft(next)
         }
-      }
-
-      function flushFinal() {
-        if (finalRef.current.trim()) append(finalRef.current)
-        finalRef.current = ''
       }
 
       function start() {
@@ -74,7 +71,8 @@ window.__ModuleLoader__.load({
           return
         }
         manualRef.current = false
-        finalRef.current = ''
+        baseRef.current = props.draft && typeof props.draft === 'string' ? props.draft : ''
+        committedRef.current = ''
         lastBootRef.current = 0
         boot(SR)
         setRec(true)
@@ -92,7 +90,7 @@ window.__ModuleLoader__.load({
           var interimText = ''
           for (var i = e.resultIndex; i < e.results.length; i++) {
             var res = e.results[i]
-            if (res.isFinal) finalRef.current += res[0].transcript
+            if (res.isFinal) commitSegment(res[0].transcript)
             else interimText += res[0].transcript
           }
           setInterim(interimText)
@@ -121,7 +119,6 @@ window.__ModuleLoader__.load({
           if (manualRef.current) {
             setRec(false)
             setInterim('')
-            flushFinal()
             return
           }
           try {
