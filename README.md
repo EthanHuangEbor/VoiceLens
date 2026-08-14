@@ -6,7 +6,7 @@
     3. demo.png        —— DSH 输入框截图，工具行高亮麦克风按钮 + 说话浮现文字
 -->
 
-<!-- ![voicelens banner](docs/assets/banner.png) -->
+<p align="center"><img src="docs/assets/banner.png" alt="voicelens banner" width="100%"></p>
 
 <h1 align="center">voicelens 🎙️</h1>
 <p align="center"><b>给文本模型装上「耳朵」—— 一个引擎，多端复用。</b></p>
@@ -30,6 +30,8 @@
 - 🔌 **可配置 ASR 引擎**：`groq`（免费）、`openai`（任意 OpenAI 兼容 `/audio/transcriptions`）、`whisper-local`（whisper.cpp 零 key）。
 - 🧩 **一个引擎多端复用**：分层配置 `VOICELENS_*` > `~/.voicelens/config.json`，所有宿主共享一份。
 
+<!-- ![demo](docs/assets/demo.png) —— 待重新生成（当前为 1196×154 长条，需 4:3） -->
+
 ## 🏗️ 架构
 
 深度借鉴并致敬 [modlens](https://github.com/liustack/modlens) 的「三层分离」设计：
@@ -41,7 +43,7 @@
 | 平台原生 | DSH 插件（read_image + vision adapter） | DSH 插件（transcribe_audio 工具 + 麦克风按钮） |
 | 安装文档 | INSTALL.md | INSTALL.md |
 
-<!-- ![architecture](docs/assets/architecture.png) -->
+<p align="center"><img src="docs/assets/architecture.png" alt="voicelens architecture" width="720"></p>
 
 ```
 voicelens/
