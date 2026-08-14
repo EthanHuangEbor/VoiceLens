@@ -30,7 +30,7 @@
 - 🔌 **可配置 ASR 引擎**：`groq`（免费）、`openai`（任意 OpenAI 兼容 `/audio/transcriptions`）、`whisper-local`（whisper.cpp 零 key）。
 - 🧩 **一个引擎多端复用**：分层配置 `VOICELENS_*` > `~/.voicelens/config.json`，所有宿主共享一份。
 
-<!-- ![demo](docs/assets/demo.png) —— 待重新生成（当前为 1196×154 长条，需 4:3） -->
+<p align="center"><img src="docs/assets/demo.png" alt="DSH 输入框 + voicelens 麦克风按钮" width="720"></p>
 
 ## 🏗️ 架构
 
