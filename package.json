@@ -1,0 +1,47 @@
+{
+  "name": "voicelens",
+  "version": "0.1.0",
+  "description": "Voice input for DeepSeek Harness: a mic button in the composer (browser speech) plus a transcribe_audio tool backed by configurable ASR providers.",
+  "type": "module",
+  "exports": {
+    ".": "./dsh/index.js",
+    "./dsh": "./dsh/index.js",
+    "./client": "./client/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dsh",
+    "client",
+    "skills",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "speech-to-text",
+    "voice",
+    "transcription",
+    "whisper",
+    "agent-skill",
+    "plugin"
+  ],
+  "author": "Ethan Huang",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": []
+    }
+  }
+}

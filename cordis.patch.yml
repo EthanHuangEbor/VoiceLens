@@ -1,0 +1,11 @@
+# voicelens bundle patch: mounts the voicelens host plugin into the host
+# composition of a dsh profile. The host half registers the `transcribe_audio`
+# tool (model-callable ASR) into the shared `tools` registry; the client half
+# (dsh.client in package.json) adds the mic button to the composer tool row.
+#
+# Install: `dsh plugin --profile <name> add <this package>` (npm or a local
+# path). The `dsh plugin` command pnpm-installs the package into the profile
+# and reconciles it into the profile's `dsh.profile.bundles` layer list.
+- insert:
+    - id: voicelens
+      name: voicelens
