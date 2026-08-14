@@ -39,6 +39,7 @@ window.__ModuleLoader__.load({
       var committedRef = react.useRef('')
       var manualRef = react.useRef(false)
       var lastBootRef = react.useRef(0)
+      var mediaRecRef = react.useRef(null)
 
       react.useEffect(
         function () {
@@ -47,6 +48,11 @@ window.__ModuleLoader__.load({
             try {
               if (recogRef.current) recogRef.current.abort()
             } catch (e) {}
+            if (mediaRecRef.current) {
+              try {
+                if (mediaRecRef.current.state === 'recording') mediaRecRef.current.stop()
+              } catch (e) {}
+            }
           }
         },
         [],
@@ -65,17 +71,88 @@ window.__ModuleLoader__.load({
 
       function start() {
         setErr('')
-        var SR = globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition
-        if (!SR) {
-          setErr('此浏览器不支持语音识别（需 Chrome/Edge）')
-          return
-        }
         manualRef.current = false
         baseRef.current = props.draft && typeof props.draft === 'string' ? props.draft : ''
         committedRef.current = ''
-        lastBootRef.current = 0
-        boot(SR)
-        setRec(true)
+        var SR = globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition
+        if (SR) {
+          lastBootRef.current = 0
+          boot(SR)
+          setRec(true)
+          return
+        }
+        startHostRecording()
+      }
+
+      function startHostRecording() {
+        var nav = globalThis.navigator
+        if (!nav || !nav.mediaDevices || typeof nav.mediaDevices.getUserMedia !== 'function') {
+          setErr('此浏览器不支持语音输入（请用 Chrome/Edge/Firefox/Safari）')
+          return
+        }
+        var MR = globalThis.MediaRecorder
+        if (typeof MR !== 'function') {
+          setErr('此浏览器不支持录音（MediaRecorder 缺失）')
+          return
+        }
+        nav.mediaDevices.getUserMedia({ audio: true }).then(
+          function (stream) {
+            var mime = 'audio/webm'
+            try {
+              if (MR.isTypeSupported && MR.isTypeSupported('audio/webm;codecs=opus')) mime = 'audio/webm;codecs=opus'
+            } catch (e) {}
+            var rec
+            try {
+              rec = new MR(stream, mime ? { mimeType: mime } : undefined)
+            } catch (e) {
+              rec = new MR(stream)
+            }
+            var chunks = []
+            rec.ondataavailable = function (e) {
+              if (e.data && e.data.size) chunks.push(e.data)
+            }
+            rec.onstop = function () {
+              stream.getTracks().forEach(function (t) { try { t.stop() } catch (e) {} })
+              var blobType = (rec.mimeType || mime || 'audio/webm').split(';')[0]
+              var blob = new Blob(chunks, { type: blobType })
+              transcribeOnHost(blob, blobType)
+            }
+            rec.onerror = function () {
+              setErr('录音失败')
+              setRec(false)
+            }
+            mediaRecRef.current = rec
+            rec.start()
+            setRec(true)
+          },
+          function (e) {
+            var code = e && e.name ? e.name : 'error'
+            setErr(code === 'NotAllowedError' || code === 'SecurityError' ? '麦克风权限被拒绝' : '无法获取麦克风: ' + String(e && e.message || e))
+            setRec(false)
+          },
+        )
+      }
+
+      function transcribeOnHost(blob, mime) {
+        setRec(false)
+        setInterim('转写中…')
+        var opts = { method: 'POST', body: blob, headers: { 'Content-Type': mime || 'audio/webm' } }
+        globalThis.fetch('/voicelens/transcribe', opts)
+          .then(function (r) {
+            return r.json().then(function (j) {
+              if (!r.ok) throw new Error(j && j.error ? j.error : 'HTTP ' + r.status)
+              return j
+            })
+          })
+          .then(function (res) {
+            setInterim('')
+            if (res && res.text) commitSegment(res.text)
+            else setErr('转写结果为空')
+          })
+          .catch(function (e) {
+            setInterim('')
+            setErr('转写失败: ' + String(e && e.message || e))
+          })
       }
 
       function boot(SR) {
@@ -141,6 +218,11 @@ window.__ModuleLoader__.load({
         if (recogRef.current) {
           try {
             recogRef.current.stop()
+          } catch (e) {}
+        }
+        if (mediaRecRef.current && mediaRecRef.current.state === 'recording') {
+          try {
+            mediaRecRef.current.stop()
           } catch (e) {}
         }
       }
